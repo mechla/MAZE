@@ -1,7 +1,10 @@
-package doubleMaze
+package view
 {
 	import com.greensock.TweenLite;
 	import com.greensock.easing.Elastic;
+	import com.greensock.easing.Sine;
+	
+	import doubleMaze.GameConst;
 	
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
@@ -16,7 +19,7 @@ package doubleMaze
 		private var _next_round:Function;
 		private var _pop_up:level_up_popup =  new level_up_popup();
 		private var _popup_size:Point =  new Point(_pop_up.width,+_pop_up.height);
-		private var _show_time:Number = 1;
+		private var _show_time:Number = .5;
 		private var _instruction:pop_up_instructions =  new pop_up_instructions();
 		private var _instruction_index:Number = 1;
 		private var _bg:background =  new background();
@@ -47,7 +50,7 @@ package doubleMaze
 		}
 		private function swapInstruction(...args):void{
 			if(_instruction_index == 1){
-				_instruction_index++;
+				_instruction_index = 2;
 				_instruction.gotoAndStop(_instruction_index);
 			}
 			else{
@@ -75,12 +78,14 @@ package doubleMaze
 			show();
 		}
 		private function show():void{
-			_pop_up.x = _stage_width/2;
-			_pop_up.y = _stage_height/2;
-			_pop_up.scaleX = _pop_up.scaleY = 0;
+//			_pop_up.x = _stage_width/2;
+//			_pop_up.y = _stage_height/2;
+//			_pop_up.scaleX = _pop_up.scaleY = 0;
+			_pop_up.alpha = 0;
 			this.addChild(_bg);
 			this.addChild(_pop_up);
-			TweenLite.to(_pop_up, _show_time, {x:_stage_width/2 - _popup_size.x/2, y:_stage_height/2 - _popup_size.y/2, scaleX:1, scaleY:1,ease:Elastic.easeOut, onComplete:addEvent});
+//			TweenLite.to(_pop_up, _show_time, {x:_stage_width/2 - _popup_size.x/2, y:_stage_height/2 - _popup_size.y/2, scaleX:1, scaleY:1,ease:Sine.easeOut, onComplete:addEvent});
+			TweenLite.to(_pop_up, _show_time, {alpha:1,ease:Sine.easeOut, onComplete:addEvent});
 			
 		}
 		private function addEvent():void{
@@ -94,7 +99,8 @@ package doubleMaze
 				this.removeEventListener(TouchEvent.TOUCH_BEGIN, hide);
 			else
 				this.removeEventListener(MouseEvent.CLICK, hide);
-			TweenLite.to(_pop_up,_show_time, {x:_stage_width/2, y:_stage_height/2, scaleX:0, scaleY:0, ease:Elastic.easeIn, onComplete:removePopUp});
+//			TweenLite.to(_pop_up,_show_time, {x:_stage_width/2, y:_stage_height/2, scaleX:0, scaleY:0, ease:Sine.easeIn, onComplete:removePopUp});
+			TweenLite.to(_pop_up,_show_time, {alpha:0, ease:Sine.easeIn, onComplete:removePopUp});
 		}
 		private function removePopUp():void{
 			this.removeChild(_pop_up)

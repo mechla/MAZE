@@ -1,4 +1,4 @@
-package doubleMaze
+package view
 {
 	import com.greensock.TweenAlign;
 	import com.greensock.TweenLite;
@@ -12,6 +12,8 @@ package doubleMaze
 	import flash.ui.Keyboard;
 	import flash.ui.Multitouch;
 	import flash.ui.MultitouchInputMode;
+	import doubleMaze.GameConst;
+	import doubleMaze.cubeGame;
 	
 	public class Menu extends GameConst
 	{
@@ -63,10 +65,14 @@ package doubleMaze
 		}
 		private function addNavigation():void{
 			_container.addChild(_navigation);
+			_navigation.y = -20;
 			_navigation.up.mouseChildren = false;
 			_navigation.down.mouseChildren = false;
 			_navigation.left.mouseChildren = false;
 			_navigation.right.mouseChildren = false;
+			addEvents();
+		}
+		public function addEvents():void{
 			if(_android){
 				_navigation.up.addEventListener(TouchEvent.TOUCH_BEGIN, moveBoxesAndroid);
 				_navigation.down.addEventListener(TouchEvent.TOUCH_BEGIN,  moveBoxesAndroid);
@@ -78,6 +84,20 @@ package doubleMaze
 				_navigation.down.addEventListener(MouseEvent.CLICK, moveBoxes);
 				_navigation.left.addEventListener(MouseEvent.CLICK, moveBoxes);
 				_navigation.right.addEventListener(MouseEvent.CLICK, moveBoxes);
+			}
+		}
+		public function removeEvents():void{
+			if(_android){
+				_navigation.up.removeEventListener(TouchEvent.TOUCH_BEGIN, moveBoxesAndroid);
+				_navigation.down.removeEventListener(TouchEvent.TOUCH_BEGIN,  moveBoxesAndroid);
+				_navigation.left.removeEventListener(TouchEvent.TOUCH_BEGIN,  moveBoxesAndroid);
+				_navigation.right.removeEventListener(TouchEvent.TOUCH_BEGIN,  moveBoxesAndroid);
+			}
+			else{
+				_navigation.up.removeEventListener(MouseEvent.CLICK, moveBoxes);
+				_navigation.down.removeEventListener(MouseEvent.CLICK, moveBoxes);
+				_navigation.left.removeEventListener(MouseEvent.CLICK, moveBoxes);
+				_navigation.right.removeEventListener(MouseEvent.CLICK, moveBoxes);
 			}
 		}
 		public function changeLevel(level:Number):void{

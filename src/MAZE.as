@@ -26,9 +26,16 @@ package
 			
 	
 			
-			addDoubleMazeGame()
+			addDoubleMazeGame();
+			addEvents();
+		}
+		public function addEvents():void{
 			if(!_android)
 				stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		}
+		public function removeEvents():void{
+			if(!_android)
+				stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		}
 		private function onKeyDown(event:KeyboardEvent):void
 		{
@@ -57,9 +64,10 @@ package
 		}
 		private function addDoubleMazeGame():void{
 			_double_maze_game =  new DoubleMazeGame();
-			//			_double_maze_game.rotation = 90;
-			//			_double_maze_game.x = 500;
-			//			_double_maze_game.y = -50;
+			//rotation
+						_double_maze_game.rotation = 90;
+						_double_maze_game.x = 480;
+						_double_maze_game.y = 0;
 			this.addChild(_double_maze_game);
 		}
 	}

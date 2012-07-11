@@ -23,6 +23,9 @@ package doubleMaze
 	import flash.ui.Multitouch;
 	import flash.ui.MultitouchInputMode;
 	
+	import view.Menu;
+	import view.PopUp;
+	
 	[SWF(backgroundColor=0xffffff)]
 	public class cubeGame extends GameConst
 	{
@@ -52,12 +55,12 @@ package doubleMaze
 		private var _menu:Menu =  new Menu();
 		private var _pop_up:PopUp =  new PopUp();
 		private static var  _instance:cubeGame  = new cubeGame();
-
+		
 		public function get pop_up():PopUp
 		{
 			return _pop_up;
 		}
-
+		
 		public static function instance():cubeGame
 		{
 			return _instance;
@@ -67,8 +70,8 @@ package doubleMaze
 		}
 		public function init():void{
 			
-			_box1 = new IsoBox(_size, _red, _size);
-			_box2 = new IsoBox(_size, _red, _size);
+			_box1 = new IsoBox(_size, _red, _hight);
+			_box2 = new IsoBox(_size, _red, _hight);
 			_tile1 = new IsoFloor(_size, _red);
 			_tile2 = new IsoFloor(_size, _red);
 			
@@ -118,12 +121,16 @@ package doubleMaze
 		private function createWorld():void{  
 			_world = new IsoWorld();
 			_world.x = 530;
-			_world.y = 90;
+			_world.y = 60;
 			addChild(_world);this.setChildIndex(_pop_up, this.numChildren-1);
 			createTille();
 			_world.addChildToFloor(_tile2);
 			_world.addChildToFloor(_tile1);
+			_one_passes =  new Array();
+			_one_passes_yellow =  new Array();
+			_gaps =  new Array();
 			createRound();
+			createRound(false);
 			_world.addChildToWorld(_box1);			
 			_world.addChildToWorld(_box2);
 		}
@@ -138,67 +145,95 @@ package doubleMaze
 				}
 			}
 		}
-		private function createRound():void{			
-			_currentLevelArray = Levels.instance().getLevel(_currentLevelNumber);
+		private function createBlock(i:int,j:int):void{
+			var newBox:IsoBox = new IsoBox(_size, _yellow, _hight);
+			newBox.position = new Point3D(i * _size, 0, j * _size);
+			newBox.alpha = .5;
+			_world.addChildToWorld(newBox);
+		}
+		private function createStart2(i:int,j:int):void{
+			_box2_str = new Point(i * _size, j * _size);
+			_box2.position =  new Point3D(i * _size, 0, j * _size);
+			_start2 =  new IsoFloor(_size, _gray);
+			_start2.position =  new Point3D(i * _size, 0, j * _size);
+			_world.addChildToFloor(_start2);
+		}
+		private function createStart1(i:int,j:int):void{
+			_box1_str = new Point(i * _size, j * _size);
+			_box1.position =  new Point3D(i * _size, 0, j * _size);
+			_start1 =  new IsoFloor(_size, _gray);
+			_start1.position =  new Point3D(i * _size, 0, j * _size);
+			_world.addChildToFloor(_start1);
+		}
+		private function createBreak(i:int,j:int):void{
+			var one_pass:IsoFloor = new IsoFloor(_size, _green_light);
+			one_pass.position = new Point3D(i * _size, 0, j * _size);
+			_world.addChildToFloor(one_pass);
+			_one_passes.push(one_pass.position);
+		}
+		private function createRound(first:Boolean = true):void{
+			if(first)
+				_currentLevelArray = Level2.instance().getLevel1(_currentLevelNumber);
+			else
+				_currentLevelArray = Level2.instance().getLevel2(_currentLevelNumber);
 			_gaps =  new Array();
-			_one_passes =  new Array();
-			_one_passes_yellow  = new Array();
-			//	gap: 5,6  9  	// box1: 3 ->  7                          box2: 2 -> 8
-			for(var i:int = 0; i < 10; i++)
+			var level_i:int = 0; var level_j:int = 0;
+			var j_start:int = first?1:12;
+			var j_end:int = first?10:21;
+			for(var i:int = 1; i < 9; i++)
 			{
-				for(var j:int = 0; j < 21; j++)
+				level_j = 0;
+				for(var j:int = j_start; j < j_end; j++)
 				{
-					var element:Number= _currentLevelArray[i][j];
-					if (element == 1)
+					
+					var element:String= _currentLevelArray[level_i][level_j];
+//										trace(level_i,level_j,element);
+					if (element == "block")
 					{
-						var newBox:IsoBox = new IsoBox(_size, _yellow, _size);
-						newBox.position = new Point3D(i * _size, 0, j * _size);
-						newBox.alpha = .5;
-						_world.addChildToWorld(newBox);
+						createBlock(i,j);
 					}
-					if(element == 3){
-						_box1_str = new Point(i * _size, j * _size);
-						_box1.position =  new Point3D(i * _size, 0, j * _size);
-						_start1 =  new IsoFloor(_size, _gray);
-						_start1.position =  new Point3D(i * _size, 0, j * _size);
-						_world.addChildToFloor(_start1);
-						
+					if (element == "break")  // = _one_passes
+					{
+						createBreak(i,j);
 					}
-					if(element == 2){
-						_box2_str = new Point(i * _size, j * _size);
-						_box2.position =  new Point3D(i * _size, 0, j * _size);
-						_start2 =  new IsoFloor(_size, _gray);
-						_start2.position =  new Point3D(i * _size, 0, j * _size);
-						_world.addChildToFloor(_start2);
-						
+					if(element == "start"){
+						if(first)createStart1(i,j);
+						else createStart2(i,j);
 					}
-					if(element == 7){
-						_box1DesirePosition = new Point3D(i * _size, 0, j * _size);
-						_tile1.position = _box1DesirePosition;
+					if(element == "end"){
+						if(first){
+							_box1DesirePosition = new Point3D(i * _size, 0, j * _size);
+							_tile1.position = _box1DesirePosition;
+						}
+						else{
+							_box2DesirePosition =  new Point3D(i * _size, 0, j * _size);
+							_tile2.position = _box2DesirePosition;
+						}
 					}
-					if(element == 8){
-						_box2DesirePosition =  new Point3D(i * _size, 0, j * _size);
-						_tile2.position = _box2DesirePosition;
-					}
-					if(element == 5){
-						var gap:IsoFloor = new IsoFloor(_size, _green);
-						gap.position = new Point3D(i * _size, 0, j * _size);
-						_world.addChildToFloor(gap);
-						_gaps.push(gap.position);
-					}
-					if(element == 6){
-						var one_pass:IsoFloor = new IsoFloor(_size, _green_light);
-						one_pass.position = new Point3D(i * _size, 0, j * _size);
-						_world.addChildToFloor(one_pass);
-						_one_passes.push(one_pass.position);
-					}
-					if(element == 9){
-						var one_pass_yellow:IsoFloor = new IsoFloor(_size, _yellow);
-						one_pass_yellow.position = new Point3D(i * _size, 0, j * _size);
-						_world.addChildToFloor(one_pass_yellow);
-						_one_passes_yellow.push(one_pass_yellow.position);
-					}
+					//					if(element == 5){
+					//						var gap:IsoFloor = new IsoFloor(_size, _green);
+					//						gap.position = new Point3D(i * _size, 0, j * _size);
+					//						_world.addChildToFloor(gap);
+					//						_gaps.push(gap.position);
+					//					}
+					//					if(element == 9){
+					//						var one_pass_yellow:IsoFloor = new IsoFloor(_size, _yellow);
+					//						one_pass_yellow.position = new Point3D(i * _size, 0, j * _size);
+					//						_world.addChildToFloor(one_pass_yellow);
+					//						_one_passes_yellow.push(one_pass_yellow.position);
+					//					}
+					level_j++;
 				}
+				level_i++;
+			}
+			for(var j:int = 0; j < 21; j++){
+				createBlock(0,j);
+				createBlock(9,j)
+			}
+			for(i = 1;i<9;i++){
+				createBlock(i,0);
+				createBlock(i,9);
+				createBlock(i,20);
 			}
 		}
 		private function moveBoxes():void
@@ -237,37 +272,55 @@ package doubleMaze
 			
 			for each( var g:Point3D in _gaps){
 				if (_box1.x == g.x && _box1.z == g.z) {
-					_box1.x = _box1_str.x;
-					_box1.z = _box1_str.y;
+					TweenLite.delayedCall(2,moveBox1ToStart);
+				
 					
 				}
 				if (_box2.x == g.x && _box2.z == g.z) {
-					_box2.x = _box2_str.x;
-					_box2.z = _box2_str.y;
+					TweenLite.delayedCall(2,moveBox2ToStart);
+				
 					
 				}
 			}
 			for each ( var p:Point3D in _one_passes){
 				if ((_box1.x == p.x && _box1.z == p.z)||(_box2.x == p.x && _box2.z == p.z)) {
-					var gap:IsoFloor = new IsoFloor(_size, 0x005500);
-					gap.position = p;
-					_world.addChildToFloor(gap);
-					_gaps.push(p);
-					_one_passes.splice(_one_passes.indexOf(p));
+					TweenLite.delayedCall(1,standOnGap,[p]);
+				
 				}
 			}
 			for each ( var o:Point3D in _one_passes_yellow){
 				if ((_box1.x == o.x && _box1.z == o.z)||(_box2.x == o.x && _box2.z == o.z)) {
-					_one_passes_yellow.splice(_one_passes_yellow.indexOf(o));
-					_add_block =  true;
-					_new_block_pos =  o;
+					TweenLite.delayedCall(1,standOnOnePassedYellow,[o]);
+			
 				}
 			}
+		}
+		private function moveBox2ToStart():void{
+			_box2.x = _box2_str.x;
+			_box2.z = _box2_str.y;
+		}
+		private function moveBox1ToStart():void{
+			_box1.x = _box1_str.x;
+			_box1.z = _box1_str.y;
+			
+		}
+		private function standOnOnePassedYellow(o:Point3D):void{
+			_one_passes_yellow.splice(_one_passes_yellow.indexOf(o));
+			_add_block =  true;
+			_new_block_pos =  o;
+		}
+		private function standOnGap(p:Point3D):void{
+			var gap:IsoFloor = new IsoFloor(_size, 0x005500);
+			gap.position = p;
+			_world.addChildToFloor(gap);
+			_gaps.push(p);
+			_one_passes.splice(_one_passes.indexOf(p));
+			
 		}
 		private function addNewBlock():void{
 			if(_add_block){
 				_add_block = false;
-				var block:IsoBox  = new IsoBox(_size, _yellow, _size);
+				var block:IsoBox  = new IsoBox(_size, _yellow, _hight);
 				block.position = _new_block_pos;
 				_world.addChildToWorld(block);
 			}

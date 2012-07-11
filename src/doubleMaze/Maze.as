@@ -131,7 +131,8 @@ package
 					break;
 				
 			}
-			addEventListener(Event.ENTER_FRAME, onEnterFrame);
+//			addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			onEnterFrame();
 		}
 		
 		private function onKeyUp(event:KeyboardEvent):void
@@ -140,10 +141,10 @@ package
 			_box1.vz = 0;
 			_box2.vx = 0;
 			_box2.vz = 0;
-			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+//			removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 		}
 		
-		private function onEnterFrame(event:Event):void
+		private function onEnterFrame(event:*):void
 		{
 			if(_world.canMove(_box1))
 			{
@@ -162,15 +163,16 @@ package
 				_box2.z == _box2DesirePosition.z && 
 				_box1.z == _box1DesirePosition.z)				
 			{
-				removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+//				removeEventListener(Event.ENTER_FRAME, onEnterFrame);
 				trace("wygrałes");
 				nextRound();
+			}else{
+				
 			}
 			_world.sort();
 		}
 		
 		private function nextRound():void{
-//			_world.removeChildrenFromWorld();
 			_currentLevelNumber++;
 			trace(_currentLevelNumber);
 			removeChild(_world);

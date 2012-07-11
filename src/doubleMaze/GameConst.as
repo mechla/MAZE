@@ -9,7 +9,8 @@ package doubleMaze
 		protected var _stage_height:Number =  480;
 		
 		
-		protected var _size:Number = 25
+		protected var _size:Number = 25;
+		protected var _hight:Number = 10;
 		protected var _jump:Number = _size;
 		
 		protected var _green:uint = 0x005500;
